@@ -8,6 +8,8 @@ from simplejson.compat import StringIO
 import sys
 import md5
 #CLASSES
+password = ''
+username = ''
 class User(object):
     def __init__(self, first_name, last_name, username, picture_url, email, id):
         self.firstName = first_name
@@ -32,7 +34,7 @@ class Task(object):
         self.estimate = estimate
         self.project = project
 
-_BASEURL = 'http://dev.letolab.com:8000/api/'
+_BASEURL = 'http://www.tracker.pm/api/'
 
 #JSON
 def project_decoder(obj):
@@ -44,7 +46,7 @@ def task_decoder(obj, project):
 # METHODS
 
 def getAuth():
-	return 'api_id=' + urllib.quote(sys.argv[1]) +'&api_key=' + md5.new((sys.argv[2])).hexdigest()
+	return 'api_id=' + urllib.quote(username) +'&api_key=' + md5.new(password).hexdigest()
 
 def getProjects():
 	url = _BASEURL + 'projects?' + getAuth() 
@@ -76,8 +78,9 @@ def getProject(code):
 	for p in project_list:
 		if p.code == code:
 			current_project = p
-	url = _BASEURL + 'tasks?' + getAuth() + '&project_id=' + current_project.id 
+	url = _BASEURL + 'tasks?' + getAuth() + '&project=' + current_project.id 
 	response = makeAPICall(url)
+	print url
 	# print response
 	task_json_list = json.load(StringIO(response))
 	task_list = []
@@ -113,8 +116,11 @@ def getProject(code):
 
 
 def run():
-	login()
-	getProject(sys.argv[3])
+	if len(sys.argv) != 2:
+		print 'usage: python shTracker.py <Project code> - need 1 argument, provided ' + str(len(sys.argv)-1)
+	if len(sys.argv) == 2:
+		login()
+		getProject(sys.argv[1])
 
 
 
